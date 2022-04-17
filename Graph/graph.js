@@ -6,7 +6,8 @@ const main = async () => {
 		const result = await axios.post(
 			"https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2",
 			{
-				query: `
+				query: 
+				`
 				{
 				 	pairDayDatas(first: 365, orderBy: date, orderDirection: desc,
 				   		where: {
@@ -15,11 +16,15 @@ const main = async () => {
 				   		}
 				 	) 
 				 	{
-					    date
-					    dailyVolumeToken0
-					    dailyVolumeToken1
-					    dailyVolumeUSD
-					    reserveUSD
+					        date
+						  	reserve0
+						  	reserve1
+						    totalSupply
+						    reserveUSD
+						  	dailyVolumeToken0
+						  	dailyVolumeToken1
+						    dailyVolumeUSD
+						  	dailyTxns
 				}
 				}
 				`
@@ -33,10 +38,15 @@ const main = async () => {
 			header: [
 		  
 			    {id: 'date', title: 'date'},
+			    {id: 'reserve0', title: 'reserve0'},
+			    {id: 'reserve1', title: 'reserve1'},
+			    {id: 'totalSupply', title: 'totalSupply'},
+			    {id: 'reserveUSD', title: 'reserveUSD'},
 			    {id: 'dailyVolumeToken0', title: 'dailyVolumeToken0'},
 			    {id: 'dailyVolumeToken1', title: 'dailyVolumeToken1'},
 			    {id: 'dailyVolumeUSD', title: 'dailyVolumeUSD'},
-			    {id: 'reserveUSD', title: 'reserveUSD'}
+			    {id: 'dailyTxns', title: 'dailyTxns'},
+			    
 			]
 		});
 		csvWriter
