@@ -31,5 +31,5 @@ for i in df0['pairAddress']:
 df0["aprs"]=aprs
 print(df0.head(20))
 
-df0.to_csv("aprs.csv", sep='\t')
+df0.to_csv("aprs.csv")
 

@@ -31,9 +31,10 @@ const main = async () => {
 		const csvWriter = createCsvWriter({
   
 			path: 'top100.csv',
+			headerIdDelimiter: '.',
 			header: [
-				// {id: 'token0', title: 'token0'},
-				// {id: 'token1', title: 'token1'},
+				{id: 'token0.symbol', title: 'token0'},
+				{id: 'token1.symbol', title: 'token1'},
 			    {id: 'reserveUSD', title: 'reserveUSD'},
 			    {id: 'pairAddress', title: 'pairAddress'},
 			]
