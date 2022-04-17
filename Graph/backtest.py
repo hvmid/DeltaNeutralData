@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 import os
 
-# os.system("node mostLiquid.js")
+os.system("node mostLiquid.js")
 
 datafile0 = "top100.csv"
 df0 = pd.read_csv(datafile0)
@@ -31,5 +31,5 @@ for i in df0['pairAddress']:
 df0["aprs"]=aprs
 print(df0.head(20))
 
-
+df0.to_csv("aprs.csv", sep='\t')
 

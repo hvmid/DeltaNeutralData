@@ -32,7 +32,8 @@ const main = async () => {
   
 			path: 'top100.csv',
 			header: [
-			
+				// {id: 'token0', title: 'token0'},
+				// {id: 'token1', title: 'token1'},
 			    {id: 'reserveUSD', title: 'reserveUSD'},
 			    {id: 'pairAddress', title: 'pairAddress'},
 			]
