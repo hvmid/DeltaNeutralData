@@ -2,8 +2,9 @@ const csvwriter = require('csv-writer')
 const axios = require('axios');
 const prompt = require('prompt-sync')();
 
-const func = async (pairadd) => {
+const func = async (pairadd, days) => {
 	pairad = pairadd
+	num_days = days
 	try{
 		const result = await axios.post(
 			"https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2",
@@ -11,7 +12,7 @@ const func = async (pairadd) => {
 				query: 
 				`
 				{
-				 	pairDayDatas(first: 365, orderBy: date, orderDirection: desc,
+				 	pairDayDatas(first: ${num_days}, orderBy: date, orderDirection: desc,
 				   		where: {
 				     		pairAddress: "${pairad}",
 				     		date_gt: 1592505859
@@ -63,4 +64,4 @@ const func = async (pairadd) => {
 	}
 }
 
-func(process.argv[2]);
+func(process.argv[2], process.argv[3]);
