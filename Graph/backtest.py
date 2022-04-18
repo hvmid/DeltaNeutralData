@@ -25,22 +25,28 @@ def apr(rate, df):
 	df['pool_share'] = 1/df['reserveUSD']
 	df['24hr_reward_share'] = df['24hr_reward']*df['pool_share']
 	backtest_apr = sum(df['24hr_reward_share'])
+	backtest_apy = apy(backtest_apr)
 
-	return backtest_apr
+	return backtest_apr, backtest_apy
 
-# def apy():
+def apy(apr):
+
+	return ((1 + apr/365)**365)-1
 
 def do_backtest(top, days, rate):
 
 	aprs  = []
+	apys = []
 	df = topPairs(top)
 	pairs = df['pairAddress']
 
 	for pair in pairs:
-		aprs.append(backtest(pair, days, rate))
+		aprs.append(backtest(pair, days, rate)[0])
+		apys.append(backtest(pair, days, rate)[1])
 	
 	df["aprs"]=aprs
-	df.to_csv("aprs%s.csv" %days)
+	df["apys"]=apys
+	df.to_csv("backtest%sdays.csv" %days)
 
-do_backtest(10, 7, 0.003)
+do_backtest(100, 7, 0.003)
 
