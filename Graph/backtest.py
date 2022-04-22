@@ -5,9 +5,11 @@ import time
 import os
 import sys
 
+pd.options.mode.chained_assignment = None
+
 
 def getTopPairs(n, date):
-    os.system("node mostLiquid.js %i %s" % (n, date))
+    os.system("node mostLiquid.js %i %i" % (n, int(date)))
     datafile = "topPairs.csv"
     df = pd.read_csv(datafile)
 
@@ -91,7 +93,7 @@ def main():
     deltaRewards = []
     deltaCumRew = []
     ethUSDC = "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc"
-    date = backtest(ethUSDC, days, LP_rate, B_rate, S_rate)[2]
+    date = backtest(ethUSDC, days, LP_rate, B_rate, S_rate)[4]
     df = getTopPairs(top, date)
     df.loc[df['dailyVolumeUSD'] != 0,:]
     for pair in df['pairAddress']:
@@ -101,7 +103,7 @@ def main():
         deltaCumRew.append(backtest(pair, days, LP_rate, B_rate, S_rate)[3])
 
     df["pairReward"], df["pairCumRew"], df["deltaRewards"], df["deltaCumRew"] = pairReward, pairCumRew, deltaRewards, deltaCumRew
-    df.to_csv("backtest%sdays.csv" % days)
+    df.to_csv("topPairs.csv" % days)
 
 
 if __name__ == '__main__':
