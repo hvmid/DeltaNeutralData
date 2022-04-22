@@ -31,6 +31,5 @@ Output:
 1. Data (folder): contains csv tables with pairDayData (reserveUSD, dailyVolumeUSD, etc.) for a given pair, csv tables names are 
 each pairs' pairAddress.
 
-2. topPairs.csv: contains the outout of topPairs.js. top n pairs ordered by reserveUSD descending.
+2. topPairs.csv: contains the outout of topPairs.js. top n pairs ordered by reserveUSD descending and contains the final product of the backtest running n days.
 
-3. backtest[n]days.csv: contains the final product of the backtest running n days.
