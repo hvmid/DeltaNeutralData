@@ -1,7 +1,7 @@
 const csvwriter = require('csv-writer')
 const axios = require('axios');
 
-const main = async (top) => {
+const main = async (top, date) => {
 	try{
 		const result = await axios.post(
 			"https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2",
@@ -9,18 +9,18 @@ const main = async (top) => {
 				query: 
 				`
 				{
-				 	pairDayDatas(first: ${top}, orderBy: reserveUSD, orderDirection: desc, where: {date: 1650153600}
-				 	) 
-				 	{
+				 	pairDayDatas(first: ${top}, orderBy: reserveUSD, orderDirection: desc, 
+				 		where: {
+				 			date: ${date}}){,
 				 			token0{
 				 				symbol
 				 			}
 				 			token1{
 				 				symbol
 				 			}
+				 			pairAddress
 						    reserveUSD
-						    pairAddress
-
+						    dailyVolumeUSD
 				}
 				}
 				`
@@ -35,8 +35,9 @@ const main = async (top) => {
 			header: [
 				{id: 'token0.symbol', title: 'token0'},
 				{id: 'token1.symbol', title: 'token1'},
-			    {id: 'reserveUSD', title: 'reserveUSD'},
 			    {id: 'pairAddress', title: 'pairAddress'},
+			    {id: 'reserveUSD', title: 'reserveUSD'},
+			    {id: 'dailyVolumeUSD', title: 'dailyVolumeUSD'},
 			]
 		});
 		csvWriter
@@ -51,4 +52,4 @@ const main = async (top) => {
 	}
 }
 
-main(process.argv[2]);
+main(process.argv[2], process.argv[3]);

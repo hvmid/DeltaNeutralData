@@ -20,6 +20,14 @@ const func = async (pairadd, days) => {
 				 	) 
 				 	{
 					        date
+					        token0{
+				 				symbol
+				 				id
+				 			}
+				 			token1{
+				 				symbol
+				 				id
+				 			}
 						  	reserve0
 						  	reserve1
 						    totalSupply
@@ -38,9 +46,14 @@ const func = async (pairadd, days) => {
 		const csvWriter = createCsvWriter({
   
 			path: `data/${pairad}.csv`,
+			headerIdDelimiter: '.',
 			header: [
 		  
 			    {id: 'date', title: 'date'},
+			    {id: 'token0.symbol', title: 'token0'},
+				{id: 'token1.symbol', title: 'token1'},
+				{id: 'token0.id', title: 'token0.id'},
+				{id: 'token1.id', title: 'token1.id'},
 			    {id: 'reserve0', title: 'reserve0'},
 			    {id: 'reserve1', title: 'reserve1'},
 			    {id: 'totalSupply', title: 'totalSupply'},
