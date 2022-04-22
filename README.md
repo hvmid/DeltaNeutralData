@@ -5,14 +5,26 @@ Dependencies:
 - node v17.9
 - npm v8.5.5
 - Python v3.10
+- axios
 - pandas
+- numpy
 
 How to use:
 
-Run the Python script and topPair_backtest will be called, you can change the input arguments: topPair_backtest(n, days, rate)
-n - number of top pair (ordered by reserveUSD (liquidity) descending)
-days - number of days to backtest
-rate - current exchange fee for the given liquidity pool
+Run the following command from this repos directory:
+
+```
+python3 backtest.py top days LP_rate B_rate S_rate
+```
+
+Where: 
+
+- top = number of top pairs
+- days = number of days to backtest 
+- LP_rate = Liquidity pool fee rate
+- B_rate = Borrow rate for shorting volatile token
+- S_rate = Staking rate for stablecoin
+
 
 Output:
 
