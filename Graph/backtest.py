@@ -24,9 +24,6 @@ def getDailyPrices(tokenAddress, days):
 
 
 def backtest(pairAddress, days, LP_rate, B_rate, S_rate):
-    #Approximate Daily rates
-    daily_borrow_rate = B_rate/365
-    daily_stake_rate = S_rate/365
 
     #Run JS script and import data
     os.system("node graph.js %s %i" % (pairAddress, days))
@@ -58,9 +55,11 @@ def backtest(pairAddress, days, LP_rate, B_rate, S_rate):
     df['ratio'] = df['ratio'][len(df)-1]/df['ratio']
     df['iloss'] = (2 * (df['ratio']**0.5 / (1 + df['ratio'])) - 1)
 
-    #Staking rewards and borrow fee
     df['daily_borrow_fee'] = B_rate/365
-    df['daily_stake_reward'] = [((daily_stake_rate+1)**(i+1))-1 for i in range(len(df))]
+    #Approximate First days stake rate
+    firstDay_stake_rate = S_rate/365
+    #Approximate n days stake rate
+    df['daily_stake_reward'] = [((firstDay_stake_rate+1)**(i+1))-1 for i in range(len(df))][::-1]
 
     #Calculating daily compouding rewards
     df['24hr_comp_reward_share'] = 1+df['24hr_reward_share'] #Temporary columns values
@@ -70,9 +69,8 @@ def backtest(pairAddress, days, LP_rate, B_rate, S_rate):
         df['24hr_comp_reward_share'][i]=df['24hr_comp_reward_share'][i]-df['24hr_comp_reward_share'][i+1]
     df['24hr_comp_reward_share'][len(df)-1]-=1
 
-    #Calculating daily delta neutral lp income
-    df['dnlp_rew'] = df['24hr_reward_share'] + df['daily_stake_reward'] - df['daily_borrow_fee']
-    df['dnlp_CumRew'] = df['24hr_comp_reward_share'] + df['daily_stake_reward'] - df['daily_borrow_fee']
+    df['dnlp_rew'] = df['24hr_reward_share'] + (df['daily_stake_reward']/2) - (df['daily_borrow_fee']/2)
+    df['dnlp_CumRew'] = df['24hr_comp_reward_share'] + (df['daily_stake_reward']/2) - (df['daily_borrow_fee']/2)
 
     #Calculating net deltra neutral lp income
     LP_Rewards = sum(df['24hr_reward_share'])
@@ -95,7 +93,6 @@ def main():
     ethUSDC = "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc"
     date = backtest(ethUSDC, days, LP_rate, B_rate, S_rate)[4]
     df = getTopPairs(top, date)
-    df.loc[df['dailyVolumeUSD'] != 0,:]
     for pair in df['pairAddress']:
         pairReward.append(backtest(pair, days, LP_rate, B_rate, S_rate)[0])
         pairCumRew.append(backtest(pair, days, LP_rate, B_rate, S_rate)[1])
@@ -103,9 +100,10 @@ def main():
         deltaCumRew.append(backtest(pair, days, LP_rate, B_rate, S_rate)[3])
 
     df["pairReward"], df["pairCumRew"], df["deltaRewards"], df["deltaCumRew"] = pairReward, pairCumRew, deltaRewards, deltaCumRew
-    df.to_csv("topPairs.csv" % days)
+    df.to_csv("topPairs.csv")
+
+    
 
 
 if __name__ == '__main__':
-    # Try python3 backtest.py 10 365 0.003 0 .19
     main()
