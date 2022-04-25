@@ -151,13 +151,8 @@ def main():
         df["pairReward"], df["pairCumRew"], df["deltaRewards"], df["deltaCumRew"] = pairReward, pairCumRew, deltaRewards, deltaCumRew
         df.to_csv("topPairs.csv")
         print("Data has been saved to topPairs.csv (Also check the 'data' folder).")
-        print(LP_rate)
-        print(B_rate)
-        print(S_rate)
-
 
     os.system("python3 backtestChart.py")
-
 
 if __name__ == '__main__':
     main()
