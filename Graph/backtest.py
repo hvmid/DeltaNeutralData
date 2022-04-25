@@ -4,7 +4,6 @@ from datetime import date
 import time
 import os
 import sys
-
 pd.options.mode.chained_assignment = None
 
 
@@ -14,6 +13,7 @@ def getTopPairs(n, date):
     df = pd.read_csv(datafile)
 
     return df
+
 
 def getDailyPrices(tokenAddress, days):
     os.system("node tokenPriceUSD.js %s %i" % (tokenAddress, days))
@@ -55,11 +55,12 @@ def backtest(pairAddress, days, LP_rate, B_rate, S_rate):
     df['ratio'] = df['ratio'][len(df)-1]/df['ratio']
     df['iloss'] = (2 * (df['ratio']**0.5 / (1 + df['ratio'])) - 1)
 
-    df['daily_borrow_fee'] = B_rate/365
+    df['daily_borrow_fee'] = (B_rate/365)/2
     #Approximate First days stake rate
     firstDay_stake_rate = S_rate/365
     #Approximate n days stake rate
-    df['daily_stake_reward'] = [((firstDay_stake_rate+1)**(i+1))-1 for i in range(len(df))][::-1]
+    df['daily_stake_reward'] = ([((firstDay_stake_rate+1)**(i+1))-1 for i in range(len(df))][::-1])
+    df['daily_stake_reward'] = [val/2 for val in df['daily_stake_reward']]
 
     #Calculating daily compouding rewards
     df['24hr_comp_reward_share'] = 1+df['24hr_reward_share'] #Temporary columns values
@@ -69,14 +70,18 @@ def backtest(pairAddress, days, LP_rate, B_rate, S_rate):
         df['24hr_comp_reward_share'][i]=df['24hr_comp_reward_share'][i]-df['24hr_comp_reward_share'][i+1]
     df['24hr_comp_reward_share'][len(df)-1]-=1
 
-    df['dnlp_rew'] = df['24hr_reward_share'] + (df['daily_stake_reward']/2) - (df['daily_borrow_fee']/2)
-    df['dnlp_CumRew'] = df['24hr_comp_reward_share'] + (df['daily_stake_reward']/2) - (df['daily_borrow_fee']/2)
+    df = df[::-1]
+    df['24hr_comp_reward_share'] = np.cumsum(df['24hr_comp_reward_share'])
+    df['24hr_reward_share'] = np.cumsum(df['24hr_reward_share'])
+
+    df['dnlp_rew'] = df['24hr_reward_share'] + (df['daily_stake_reward']) - (df['daily_borrow_fee'])
+    df['dnlp_CumRew'] = df['24hr_comp_reward_share'] + (df['daily_stake_reward']) - (df['daily_borrow_fee'])
 
     #Calculating net deltra neutral lp income
-    LP_Rewards = sum(df['24hr_reward_share'])
-    LP_CumRew = sum(df['24hr_comp_reward_share'])
-    DNLP_Rewards = sum(df['dnlp_rew'])
-    DNLP_CumRew = sum(df['dnlp_CumRew'])
+    LP_Rewards = df['24hr_reward_share'][len(df)-1]
+    LP_CumRew = df['24hr_comp_reward_share'][len(df)-1]
+    DNLP_Rewards = df['dnlp_rew'][len(df)-1]
+    DNLP_CumRew = df['dnlp_CumRew'][len(df)-1]
 
     df.to_csv("data/%s.csv" % pairAddress)
 
@@ -85,24 +90,74 @@ def backtest(pairAddress, days, LP_rate, B_rate, S_rate):
 
 def main():
 
-    top, days, LP_rate, B_rate, S_rate = int(sys.argv[1]), int(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4]), float(sys.argv[5])
-    pairReward = []
-    pairCumRew = []
-    deltaRewards = []
-    deltaCumRew = []
-    ethUSDC = "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc"
-    date = backtest(ethUSDC, days, LP_rate, B_rate, S_rate)[4]
-    df = getTopPairs(top, date)
-    for pair in df['pairAddress']:
-        pairReward.append(backtest(pair, days, LP_rate, B_rate, S_rate)[0])
-        pairCumRew.append(backtest(pair, days, LP_rate, B_rate, S_rate)[1])
-        deltaRewards.append(backtest(pair, days, LP_rate, B_rate, S_rate)[2])
-        deltaCumRew.append(backtest(pair, days, LP_rate, B_rate, S_rate)[3])
+    specific = True
+    try:
+        specific = False
+        top = int(sys.argv[1])
 
-    df["pairReward"], df["pairCumRew"], df["deltaRewards"], df["deltaCumRew"] = pairReward, pairCumRew, deltaRewards, deltaCumRew
-    df.to_csv("topPairs.csv")
+    except ValueError:
+        pair = sys.argv[1]
 
-    
+    except IndexError:
+        top = input("Specific Pair Address or Number of Top Pairs: ")
+    try:
+        top = int(top)
+        specific = False
+    except: 
+        pair = top
+    try:
+        days = int(sys.argv[2])
+    except IndexError:
+        days = int(input("Number of days to Backtest: "))
+    try:
+        LP_rate = float(sys.argv[3])
+    except IndexError:
+        LP_rate = float(input("Liquidity Pool Swap Fee (Decimal): "))
+    try:
+        B_rate = float(sys.argv[4])
+    except IndexError:
+        B_rate = float(input("Yearly Borrow Rate (Decimal): "))
+    try:
+        S_rate = float(sys.argv[5])
+    except IndexError:
+        S_rate = float(input("Yearly Stake Rate (Decimal): "))
+
+    if specific:
+        pR, pCR, dR, dCR = backtest(pair, days, LP_rate, B_rate, S_rate)
+        df = backtest(pair, days, LP_rate, B_rate, S_rate)[4]
+        print("Your LP Reward For Given Period: %i" %pR)
+        print("Your Cumulative LP Reward For Given Period: %i" %pCR)
+        print("Your Delta Neutral LP Reward For Given Period: %i" %dR)
+        print("Your Cumulative Delta Neutral LP Reward For Given Period: %i" %dCR)
+        df.to_csv("%s.csv", pair)
+        print("Data has been saved to %s.csv" %pair)
+    else:
+        pairReward = []
+        pairCumRew = []
+        deltaRewards = []
+        deltaCumRew = []
+        ethUSDC = "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc"
+        date = backtest(ethUSDC, days, LP_rate, B_rate, S_rate)[4]
+        df = getTopPairs(top, date)
+        for pair in df['pairAddress']:
+
+            pR, pCR, dR, dCR = backtest(pair, days, LP_rate, B_rate, S_rate)[0:4]
+            pairReward.append(pR)
+            pairCumRew.append(pCR)
+            deltaRewards.append(dR)
+            deltaCumRew.append(dCR)
+
+        df["pairReward"], df["pairCumRew"], df["deltaRewards"], df["deltaCumRew"] = pairReward, pairCumRew, deltaRewards, deltaCumRew
+        df.to_csv("topPairs.csv")
+        print("Data has been saved to topPairs.csv (Also check the 'data' folder).")
+        print(LP_rate)
+        print(B_rate)
+        print(S_rate)
+
+    yn = input("Would you like to chart any pairs: (y/n)")
+
+    if yn.upper()=='y':
+        os.system("python3 backtestChart.py")
 
 
 if __name__ == '__main__':
