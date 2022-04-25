@@ -7,18 +7,11 @@ from datetime import datetime
 import numpy as np
 
 def main():
-	try:
-		tok0 = sys.argv[1]
-		tok1 = sys.argv[2]
-		tok0 = tok0.upper()
-		tok1 = tok1.upper()
-	except IndexError:
-		print("Please enter a pair to display its backtest charts.")
-		tok0 = input("Input token a: ").upper()
-		tok1 = input("Input token b: ").upper()
+	
+	print("Please enter a pair to display its backtest charts.")
+	tok0 = input("Input token a: ").upper()
+	tok1 = input("Input token b: ").upper()
 
-	# tok0 = 'WETH'
-	# tok1 = sys.argv[2]
 	datafile = "topPairs.csv"
 	df = pd.read_csv(datafile)
 

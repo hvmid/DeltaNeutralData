@@ -131,6 +131,7 @@ def main():
         print("Your Cumulative Delta Neutral LP Reward For Given Period: %i" %dCR)
         df.to_csv("%s.csv", pair)
         print("Data has been saved to %s.csv" %pair)
+
     else:
         pairReward = []
         pairCumRew = []
@@ -154,10 +155,8 @@ def main():
         print(B_rate)
         print(S_rate)
 
-    yn = input("Would you like to chart any pairs: (y/n)")
 
-    if yn.upper()=='y':
-        os.system("python3 backtestChart.py")
+    os.system("python3 backtestChart.py")
 
 
 if __name__ == '__main__':
