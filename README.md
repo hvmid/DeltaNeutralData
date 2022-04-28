@@ -16,9 +16,20 @@ Run the following command from this repos directory:
 ```
 python3 backtest.py top days LP_rate B_rate S_rate
 ```
+Alternatively Run:
 
+```
+python3 backtest.py pairAddress
+```
+
+Or Just Run:
+
+```
+python3 backtest.py
+```
 Where: 
 
+- pairAddress: Liquidity Pool Pair Address
 - top = number of top pairs
 - days = number of days to backtest 
 - LP_rate = Liquidity pool fee rate
@@ -32,4 +43,7 @@ Output:
 each pairs' pairAddress.
 
 2. topPairs.csv: contains the outout of topPairs.js. top n pairs ordered by reserveUSD descending and contains the final product of the backtest running n days.
+
+3. 'pairAddress'.csv: this will be in the graph folder if you run backtest for a single, specific LP.
+
 
