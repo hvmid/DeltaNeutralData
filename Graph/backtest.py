@@ -62,26 +62,23 @@ def backtest(pairAddress, days, LP_rate, B_rate, S_rate):
     df['daily_stake_reward'] = ([((firstDay_stake_rate+1)**(i+1))-1 for i in range(len(df))][::-1])
     df['daily_stake_reward'] = [val/2 for val in df['daily_stake_reward']]
 
-    #Calculating daily compouding rewards
-    df['24hr_comp_reward_share'] = 1+df['24hr_reward_share'] #Temporary columns values
+    df['comp_pool_share'] = 1/df['reserveUSD']
+    df['24hr_comp_reward_share'] = df['24hr_reward']*df["comp_pool_share"]
     for i in range(len(df)-2, -1, -1):
-        df['24hr_comp_reward_share'][i]=(df['24hr_comp_reward_share'][i+1]) * (df['24hr_comp_reward_share'][i])
-    for i in range(0, len(df)-1):
-        df['24hr_comp_reward_share'][i]=df['24hr_comp_reward_share'][i]-df['24hr_comp_reward_share'][i+1]
-    df['24hr_comp_reward_share'][len(df)-1]-=1
+        df["comp_pool_share"][i] = (1+df["24hr_comp_reward_share"][i+1])/(df["reserveUSD"][i])
+        df["24hr_comp_reward_share"][i] = df["24hr_comp_reward_share"][i+1]+(df["24hr_reward"][i])*(df["comp_pool_share"][i])
 
     df = df[::-1]
-    df['24hr_comp_reward_share'] = np.cumsum(df['24hr_comp_reward_share'])
     df['24hr_reward_share'] = np.cumsum(df['24hr_reward_share'])
 
     df['dnlp_rew'] = df['24hr_reward_share'] + (df['daily_stake_reward']) - (df['daily_borrow_fee'])
     df['dnlp_CumRew'] = df['24hr_comp_reward_share'] + (df['daily_stake_reward']) - (df['daily_borrow_fee'])
 
     #Calculating net deltra neutral lp income
-    LP_Rewards = df['24hr_reward_share'][len(df)-1]
-    LP_CumRew = df['24hr_comp_reward_share'][len(df)-1]
-    DNLP_Rewards = df['dnlp_rew'][len(df)-1]
-    DNLP_CumRew = df['dnlp_CumRew'][len(df)-1]
+    LP_Rewards = df['24hr_reward_share'][0]
+    LP_CumRew = df['24hr_comp_reward_share'][0]
+    DNLP_Rewards = df['dnlp_rew'][0]
+    DNLP_CumRew = df['dnlp_CumRew'][0]
 
     df.to_csv("data/%s.csv" % pairAddress)
 
@@ -94,10 +91,8 @@ def main():
     try:
         specific = False
         top = int(sys.argv[1])
-
     except ValueError:
         pair = sys.argv[1]
-
     except IndexError:
         top = input("Specific Pair Address or Number of Top Pairs: ")
     try:
@@ -153,6 +148,7 @@ def main():
         print("Data has been saved to topPairs.csv (Also check the 'data' folder).")
 
     os.system("python3 backtestChart.py")
+
 
 if __name__ == '__main__':
     main()
